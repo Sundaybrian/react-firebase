@@ -6,8 +6,10 @@ admin.initializeApp();
 
 const express = require("express");
 const app = express();
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
+const env = require("./config");
+const firebase = require("firebase");
+
+firebase.initializeApp(env.firebaseConfig);
 
 // fetch screams
 app.get("/screams", (req, res) => {
@@ -50,5 +52,18 @@ app.post("/createScream", (req, res) => {
     .catch((err) => res.status(500).json({ err }));
 });
 
+// Sign up route
+app.post("/signup", (req, res) => {
+  const { userHandle, email, password, confirmPassword } = req.body;
+
+  // create user
+  firebase
+    .auth()
+    .createUserWithEmailAndPassword(email, password)
+    .then((data) => {
+      res.status(201).json({ message: `${data.user.id} created succesfully` });
+    })
+    .catch((error) => res.status(500).json(error));
+});
 // changing distance to closest server
 exports.api = functions.region("europe-west3").https.onRequest(app);
