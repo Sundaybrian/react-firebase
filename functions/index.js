@@ -4,7 +4,8 @@ const admin = require("firebase-admin");
 // intialize app
 admin.initializeApp();
 
-const app = require("express").express();
+const express = require("express");
+const app = express();
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 
@@ -13,10 +14,16 @@ app.get("/screams", (req, res) => {
   admin
     .firestore()
     .collection("screams")
+    .orderBy("createdAt", "desc")
     .get()
     .then((dataSnapshot) => {
       let screams = [];
-      dataSnapshot.forEach((doc) => screams.push(doc.data()));
+      dataSnapshot.forEach((doc) =>
+        screams.push({
+          id: doc.id,
+          ...doc.data(),
+        })
+      );
       res.json(screams);
     })
     .catch((err) => console.log(err));
@@ -28,7 +35,7 @@ app.post("/createScream", (req, res) => {
   const newScream = {
     userHandle,
     body,
-    createdAt: admin.firestore.Timestamp.fromDate(new Date()),
+    createdAt: new Date().toISOString(),
   };
 
   admin
