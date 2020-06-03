@@ -6,10 +6,20 @@ admin.initializeApp();
 
 const express = require("express");
 const app = express();
-const env = require("./config");
 const firebase = require("firebase");
+const dotenv = require("dotenv");
 
-firebase.initializeApp(env.firebaseConfig);
+dotenv.config();
+
+firebase.initializeApp({
+  apiKey: "AIzaSyA3qHvpWaaziN0matBTKEi9ZLlXuPA6hfI",
+  authDomain: "mama-bear-d07e8.firebaseapp.com",
+  databaseURL: "https://mama-bear-d07e8.firebaseio.com",
+  projectId: "mama-bear-d07e8",
+  storageBucket: "mama-bear-d07e8.appspot.com",
+  messagingSenderId: "345721970427",
+  appId: "1:345721970427:web:884f62f19911de7833da5e",
+});
 
 // fetch screams
 app.get("/screams", (req, res) => {
@@ -52,18 +62,43 @@ app.post("/createScream", (req, res) => {
     .catch((err) => res.status(500).json({ err }));
 });
 
-// Sign up route
+// ======================== Sign up route====================================//
 app.post("/signup", (req, res) => {
   const { userHandle, email, password, confirmPassword } = req.body;
+  let userId = "";
+  let token = "";
 
-  // create user
-  firebase
-    .auth()
-    .createUserWithEmailAndPassword(email, password)
-    .then((data) => {
-      res.status(201).json({ message: `${data.user.id} created succesfully` });
+  // checking if user handle is taken
+  admin
+    .firestore()
+    .doc(`/users/${userHandle}`)
+    .get()
+    .then((docSnapshot) => {
+      if (docSnapshot.exists)
+        return res
+          .status(400)
+          .json({ handle: `${userHandle} is already taken` });
+
+      //else create user
+      return firebase.auth().createUserWithEmailAndPassword(email, password);
     })
-    .catch((error) => res.status(500).json(error));
+    .then((data) => {
+      // return promise holding user data
+      userId = data.user.uid;
+      return data.user.getIdToken();
+    })
+    .then((_token) => {
+      token = _token;
+      // persisting newly created user to the users collection
+      return admin.firestore().doc(`/users/${userHandle}`).set({
+        userHandle,
+        email,
+        userId,
+        createdAt: new Date().toISOString(),
+      });
+    })
+    .then(() => res.status(201).json({ token }))
+    .catch((err) => res.json({ err }));
 });
 // changing distance to closest server
 exports.api = functions.region("europe-west3").https.onRequest(app);
