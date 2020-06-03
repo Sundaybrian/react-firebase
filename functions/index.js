@@ -50,5 +50,5 @@ app.post("/createScream", (req, res) => {
     .catch((err) => res.status(500).json({ err }));
 });
 
-//
-exports.api = functions.https.onRequest(app);
+// changing distance to closest server
+exports.api = functions.region("europe-west3").https.onRequest(app);
