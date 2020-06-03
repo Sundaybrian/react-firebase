@@ -22,6 +22,39 @@ firebase.initializeApp({
   appId: "1:345721970427:web:884f62f19911de7833da5e",
 });
 
+//***********************middlewares*********************************** *//
+const auth = (req, res, next) => {
+  let token = req.headers("auth-token");
+
+  // check if token exists
+  if (!token) {
+    return res.status(403).json({ error: "Authorization denied" });
+  }
+
+  // verifying token
+  admin
+    .auth()
+    .verifyIdToken(token)
+    .then((decodedToken) => {
+      // adding a user propertie to the req obj
+      req.user = decodedToken;
+
+      // calling the collections and fetching the user handle
+      return admin
+        .collection("users")
+        .where("userId", "==", req.user.uid)
+        .limit(1)
+        .get();
+    })
+    .then((dataSnapshot) => {
+      req.user.handle = dataSnapshot.docs[0].data().handle;
+      return next();
+    })
+    .catch((err) => res.json({ err }));
+};
+
+//***********************middlewares*********************************** *//
+
 // fetch screams
 app.get("/screams", (req, res) => {
   admin
