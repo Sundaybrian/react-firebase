@@ -4,12 +4,12 @@ const admin = require("firebase-admin");
 // intialize app
 admin.initializeApp();
 
+const app = require("express").express();
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
-//
 
 // fetch screams
-exports.getScreams = functions.https.onRequest((req, res) => {
+app.get("/screams", (req, res) => {
   admin
     .firestore()
     .collection("screams")
@@ -23,7 +23,7 @@ exports.getScreams = functions.https.onRequest((req, res) => {
 });
 
 // create a scream
-exports.createScreams = functions.https.onRequest((req, res) => {
+app.post("/createScream", (req, res) => {
   const { userHandle, body } = req.body;
   const newScream = {
     userHandle,
@@ -42,3 +42,6 @@ exports.createScreams = functions.https.onRequest((req, res) => {
     )
     .catch((err) => res.status(500).json({ err }));
 });
+
+//
+exports.api = functions.https.onRequest(app);
