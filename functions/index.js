@@ -8,9 +8,7 @@ const express = require("express");
 const app = express();
 const firebase = require("firebase");
 const { check, validationResult } = require("express-validator");
-// const dotenv = require("dotenv");
-
-// dotenv.config();
+const db = admin.firestore();
 
 firebase.initializeApp({
   apiKey: "AIzaSyA3qHvpWaaziN0matBTKEi9ZLlXuPA6hfI",
@@ -24,7 +22,8 @@ firebase.initializeApp({
 
 //***********************middlewares*********************************** *//
 const auth = (req, res, next) => {
-  let token = req.headers("auth-token");
+  let token = req.headers.authorization;
+  console.log(token);
 
   // check if token exists
   if (!token) {
@@ -40,17 +39,17 @@ const auth = (req, res, next) => {
       req.user = decodedToken;
 
       // calling the collections and fetching the user handle
-      return admin
+      return db
         .collection("users")
         .where("userId", "==", req.user.uid)
         .limit(1)
         .get();
     })
     .then((dataSnapshot) => {
-      req.user.handle = dataSnapshot.docs[0].data().handle;
+      req.user.userHandle = dataSnapshot.docs[0].data().userHandle;
       return next();
     })
-    .catch((err) => res.json({ err }));
+    .catch((err) => res.status(403).json(err));
 };
 
 //***********************middlewares*********************************** *//
@@ -76,10 +75,10 @@ app.get("/screams", (req, res) => {
 });
 
 // create a scream
-app.post("/createScream", (req, res) => {
-  const { userHandle, body } = req.body;
+app.post("/createScreams", auth, (req, res) => {
+  const { body } = req.body;
   const newScream = {
-    userHandle,
+    userHandle: req.user.userHandle,
     body,
     createdAt: new Date().toISOString(),
   };
@@ -93,7 +92,7 @@ app.post("/createScream", (req, res) => {
         message: `${docRef.id} created successfully`,
       })
     )
-    .catch((err) => res.status(500).json({ err }));
+    .catch((err) => res.status(500).json(err));
 });
 
 // ======================== Sign up route====================================//
