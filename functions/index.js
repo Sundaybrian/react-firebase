@@ -121,19 +121,30 @@ app.post(
 );
 
 // Login route
-// app.post("/login", (req, res) => {
-//   const { email, password } = req.body;
-//   let token = "";
+app.post(
+  "/login",
+  [
+    check("email", "enter valid email").isEmail(),
+    check("password", "password is required").exists(),
+  ],
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(422).json({ errors: errors.array() });
 
-//   firebase
-//     .auth()
-//     .signInWithEmailAndPassword(email, password)
-//     .then((data) => {
-//       return data.user.getIdToken();
-//     })
-//     .then((_token) => res.json({ token }))
-//     .catch((err) => res.json({ err }));
-// });
+    const { email, password } = req.body;
+    let token = "";
+
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then((data) => {
+        return data.user.getIdToken();
+      })
+      .then((token) => res.json({ token }))
+      .catch((err) => res.json({ err }));
+  }
+);
 
 // changing distance to closest server
 exports.api = functions.region("europe-west3").https.onRequest(app);
