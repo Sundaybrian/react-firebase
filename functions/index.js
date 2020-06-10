@@ -2,22 +2,18 @@ const functions = require("firebase-functions");
 
 const express = require("express");
 const app = express();
-
-const { check, validationResult } = require("express-validator");
+const { check } = require("express-validator");
 
 const { getAllScreams, postOneScream } = require("./routes/screams");
-const { signup, login } = require("./routes/users");
+const { signup, login, uploadImage } = require("./routes/users");
 const auth = require("./utils/auth");
 
 // ********************************scream routes****************//
-
-// fetch screams
 app.get("/screams", getAllScreams);
-
-// create a scream
 app.post("/createScreams", auth, postOneScream);
+// TODO:
 
-// **********************Sign up routes**********************//
+// **********************user routes**********************//
 app.post(
   "/signup",
   [
@@ -42,6 +38,8 @@ app.post(
   ],
   login
 );
+
+app.post("/uploadImage", auth, uploadImage);
 
 // changing distance to closest server
 exports.api = functions.region("europe-west3").https.onRequest(app);
