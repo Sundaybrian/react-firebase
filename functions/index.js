@@ -4,7 +4,12 @@ const express = require("express");
 const app = express();
 const { check } = require("express-validator");
 
-const { getAllScreams, postOneScream } = require("./routes/screams");
+const {
+  getAllScreams,
+  postOneScream,
+  getOneScream,
+  commentOnScream,
+} = require("./routes/screams");
 const {
   signup,
   login,
@@ -17,6 +22,8 @@ const auth = require("./utils/auth");
 // ********************************scream routes****************//
 app.get("/screams", getAllScreams);
 app.post("/createScreams", auth, postOneScream);
+app.get("/screams/:id", getOneScream);
+app.post("/screams/:id", auth, commentOnScream);
 // TODO:
 
 // **********************user routes**********************//

@@ -35,3 +35,53 @@ exports.postOneScream = (req, res) => {
     )
     .catch((err) => res.status(500).json(err));
 };
+
+// get one scream
+exports.getOneScream = (req, res) => {
+  let screamData = {};
+  db.doc(`/screams/${req.params.id}`)
+    .get()
+    .then((doc) => {
+      if (!doc.exists) {
+        return res.status(400).json({ error: "scream does not exist" });
+      }
+
+      screamData = doc.data();
+      screamData.screamId = doc.id;
+
+      // fetch comments
+      return db
+        .collection("comments")
+        .where("screamId", "==", req.params.id)
+        .get();
+    })
+    .then((data) => {
+      screamData.comments = [];
+
+      data.forEach((doc) => screamData.comments.push(doc));
+
+      return res.status(200).json(screamData);
+    })
+    .catch((error) => res.status(500).json({ error }));
+};
+
+// commment on a scream
+exports.commentOnScream = (req, res) => {
+  const screamId = req.params.id;
+  const { body } = req.body;
+
+  db.collection("comments")
+    .add({
+      userHandle: req.user.userHandle,
+      imageUrl: req.user.imageUrl,
+      body,
+      screamId,
+      createdAt: new Date().toISOString(),
+    })
+    .then((docRef) =>
+      res.json({
+        message: `comment ${docRef.id} posted successfully`,
+      })
+    )
+    .catch((error) => res.status(500).json({ error }));
+};

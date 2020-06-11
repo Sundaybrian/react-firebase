@@ -27,6 +27,7 @@ module.exports = (req, res, next) => {
     .then((dataSnapshot) => {
       // adding a userHandle to the user obj
       req.user.userHandle = dataSnapshot.docs[0].data().userHandle;
+      req.user.imageUrl = dataSnapshot.docs[0].data().imageUrl;
       return next();
     })
     .catch((err) => res.status(403).json(err));
