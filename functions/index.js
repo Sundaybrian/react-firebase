@@ -5,7 +5,12 @@ const app = express();
 const { check } = require("express-validator");
 
 const { getAllScreams, postOneScream } = require("./routes/screams");
-const { signup, login, uploadImage } = require("./routes/users");
+const {
+  signup,
+  login,
+  uploadImage,
+  addUserDetails,
+} = require("./routes/users");
 const auth = require("./utils/auth");
 
 // ********************************scream routes****************//
@@ -40,6 +45,7 @@ app.post(
 );
 
 app.post("/user/uploadImage", auth, uploadImage);
+app.post("/user/addUserDetails", auth, addUserDetails);
 
 // changing distance to closest server
 exports.api = functions.region("europe-west3").https.onRequest(app);

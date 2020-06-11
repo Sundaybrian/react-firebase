@@ -5,6 +5,7 @@ const config = require("../utils/config");
 firebase.initializeApp(config);
 
 const { validationResult } = require("express-validator");
+const { reduceUserDetails } = require("../utils/validators");
 
 exports.signup = (req, res) => {
   //  validation
@@ -49,6 +50,7 @@ exports.signup = (req, res) => {
     .catch((err) => res.json({ err }));
 };
 
+// login user
 exports.login = (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty())
@@ -67,7 +69,12 @@ exports.login = (req, res) => {
     .catch((err) => res.json({ err }));
 };
 
-// upload image
+// add user details
+exports.addUserDetails = (req, res) => {
+  let userDetails = reduceUserDetails(req.body);
+};
+
+// upload a profile image
 exports.uploadImage = (req, res) => {
   const BusBoy = require("busboy");
   const path = require("path");
