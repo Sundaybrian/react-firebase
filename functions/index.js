@@ -39,7 +39,7 @@ app.post(
   login
 );
 
-app.post("/uploadImage", auth, uploadImage);
+app.post("/user/uploadImage", auth, uploadImage);
 
 // changing distance to closest server
 exports.api = functions.region("europe-west3").https.onRequest(app);

@@ -81,7 +81,7 @@ exports.uploadImage = (req, res) => {
 
   busboy.on("file", (fieldname, file, filename, encoding, mimetype) => {
     const imageExtension = filename.split(".")[filename.split(".").length - 1];
-    const imageFileName = `${uuidv4()}${imageExtension}`;
+    imageFileName = `${uuidv4()}.${imageExtension}`;
     const filepath = path.join(os.tmpdir(), imageFileName);
     imageUploaded = { filepath, mimetype };
     file.pipe(fs.createWriteStream(filepath));
@@ -109,4 +109,6 @@ exports.uploadImage = (req, res) => {
       })
       .catch((err) => res.json({ err }));
   });
+
+  busboy.end(req.rawBody);
 };
