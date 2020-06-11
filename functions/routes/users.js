@@ -80,14 +80,19 @@ exports.uploadImage = (req, res) => {
   let imageUploaded = {};
 
   busboy.on("file", (fieldname, file, filename, encoding, mimetype) => {
-    const imageExtension = filename.split(".")[filename.split(".").length - 1];
-    imageFileName = `${uuidv4()}.${imageExtension}`;
+    if (mimetype !== "image/jpeg" && mimetype !== "image/png") {
+      return res.status(400).json({ error: "wrong file type" });
+    }
+
+    const imageExtension = filename.split(".")[filename.split(".").length - 1]; // grab image extesion
+    imageFileName = `${uuidv4()}.${imageExtension}`; // create a name
     const filepath = path.join(os.tmpdir(), imageFileName);
     imageUploaded = { filepath, mimetype };
     file.pipe(fs.createWriteStream(filepath));
   });
 
   busboy.on("finish", () => {
+    // upload image
     admin
       .storage()
       .bucket()
@@ -100,6 +105,7 @@ exports.uploadImage = (req, res) => {
         },
       })
       .then(() => {
+        // save the image to the user doc
         const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media`;
 
         return db.doc(`/users/${req.user.userHandle}`).update({ imageUrl });
