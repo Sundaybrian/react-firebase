@@ -78,7 +78,11 @@ exports.addUserDetails = (req, res) => {
     .then(() => {
       res.status(200).json({ message: "profile details added succesfully" });
     })
-    .catch((error) => res.status(500).json({ error }));
+    .catch((error) => {
+      console.log(error);
+
+      return res.status(500).json({ error });
+    });
 };
 
 // upload a profile image
