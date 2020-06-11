@@ -9,6 +9,7 @@ const {
   postOneScream,
   getOneScream,
   commentOnScream,
+  likeScream,
 } = require("./routes/screams");
 const {
   signup,
@@ -23,8 +24,12 @@ const auth = require("./utils/auth");
 app.get("/screams", getAllScreams);
 app.post("/createScreams", auth, postOneScream);
 app.get("/screams/:id", getOneScream);
-app.post("/screams/:id", auth, commentOnScream);
-// TODO:
+app.post(
+  "/screams/:id/comment",
+  [[check("body").not().isEmpty()], auth],
+  commentOnScream
+);
+app.post("/screams/:id/like", auth, likeScream);
 
 // **********************user routes**********************//
 app.post(

@@ -1,4 +1,5 @@
 const { db } = require("../utils/admin");
+const { validationResult } = require("express-validator");
 
 exports.getAllScreams = (req, res) => {
   db.collection("screams")
@@ -21,18 +22,17 @@ exports.postOneScream = (req, res) => {
   const { body } = req.body;
   const newScream = {
     userHandle: req.user.userHandle,
+    userImage: req.user.imageUrl,
     body,
     createdAt: new Date().toISOString(),
+    likeCount: 0,
+    commentCount: 0,
   };
 
   // add post
   db.collection("screams")
     .add(newScream)
-    .then((docRef) =>
-      res.json({
-        message: `${docRef.id} created successfully`,
-      })
-    )
+    .then((doc) => res.status(201).json({ ...newScream, id: doc.id }))
     .catch((err) => res.status(500).json(err));
 };
 
@@ -52,6 +52,7 @@ exports.getOneScream = (req, res) => {
       // fetch comments
       return db
         .collection("comments")
+        .orderBy("createdAt", "desc")
         .where("screamId", "==", req.params.id)
         .get();
     })
@@ -67,21 +68,36 @@ exports.getOneScream = (req, res) => {
 
 // commment on a scream
 exports.commentOnScream = (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty())
+    return res.status(422).json({ errors: errors.array() });
+
   const screamId = req.params.id;
   const { body } = req.body;
 
+  const newComment = {
+    userHandle: req.user.userHandle,
+    imageUrl: req.user.imageUrl,
+    body,
+    screamId,
+    createdAt: new Date().toISOString(),
+  };
+
   db.collection("comments")
-    .add({
-      userHandle: req.user.userHandle,
-      imageUrl: req.user.imageUrl,
-      body,
-      screamId,
-      createdAt: new Date().toISOString(),
-    })
-    .then((docRef) =>
-      res.json({
-        message: `comment ${docRef.id} posted successfully`,
-      })
-    )
-    .catch((error) => res.status(500).json({ error }));
+    .add(newComment)
+    .then(() => res.status(201).json(newComment))
+    .catch((error) => res.status(500).json(error));
+};
+
+// like a scream
+exports.likeScream = (req, res) => {
+  const newLike = {
+    userHandle: req.user.userHandle,
+    screamId: req.params.id,
+  };
+
+  db.collection("likes")
+    .add(newLike)
+    .then(() => {})
+    .catch((error) => res.status(500).json(error));
 };
