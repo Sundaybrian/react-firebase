@@ -10,6 +10,7 @@ const {
   login,
   uploadImage,
   addUserDetails,
+  getAuthenticatedUser,
 } = require("./routes/users");
 const auth = require("./utils/auth");
 
@@ -46,6 +47,7 @@ app.post(
 
 app.post("/user/uploadImage", auth, uploadImage);
 app.post("/user/addUserDetails", auth, addUserDetails);
+app.get("/user/getAuthenticatedUser", auth, getAuthenticatedUser);
 
 // changing distance to closest server
 exports.api = functions.region("europe-west3").https.onRequest(app);

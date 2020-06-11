@@ -85,6 +85,33 @@ exports.addUserDetails = (req, res) => {
     });
 };
 
+// get own user details
+exports.getAuthenticatedUser = (req, res) => {
+  let userDetails = {};
+
+  db.doc(`/users/${req.user.userHandle}`)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        userDetails.credentials = doc.data(); //populate user details
+        // fetch liked screams by user
+        return db
+          .collection("likes")
+          .where("userHandle", "==", req.user.userHandle)
+          .get();
+      }
+    })
+    .then((data) => {
+      // populate the likes
+      userDetails.likes = [];
+      data.forEach((doc) => {
+        userDetails.likes.push(doc.data());
+      });
+
+      return res.status(200).json(userDetails);
+    })
+    .catch((error) => res.status(500).json({ error }));
+};
 // upload a profile image
 exports.uploadImage = (req, res) => {
   const BusBoy = require("busboy");
