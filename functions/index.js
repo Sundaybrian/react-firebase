@@ -10,6 +10,7 @@ const {
   getOneScream,
   commentOnScream,
   likeScream,
+  unlikeScream,
 } = require("./routes/screams");
 const {
   signup,
@@ -29,7 +30,8 @@ app.post(
   [[check("body").not().isEmpty()], auth],
   commentOnScream
 );
-app.post("/screams/:id/like", auth, likeScream);
+app.get("/screams/:id/like", auth, likeScream);
+app.get("/screams/:id/unlike", auth, unlikeScream);
 
 // **********************user routes**********************//
 app.post(

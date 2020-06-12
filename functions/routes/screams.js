@@ -142,3 +142,52 @@ exports.likeScream = (req, res) => {
     })
     .catch((error) => res.status(500).json(error));
 };
+
+exports.unlikeScream = (req, res) => {
+  // check if like doc exist
+  const likeDoc = db
+    .collection("likes")
+    .where("userHandle", "==", req.user.userHandle)
+    .where("screamId", "==", req.params.id)
+    .limit(1);
+
+  // get the scream to be unliked
+  const screamDoc = db.doc(`/screams/${req.params.id}`);
+
+  let screamData = {};
+
+  screamDoc
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        screamData = { ...doc.data(), id: doc.id };
+        return likeDoc.get();
+      } else {
+        // scream doesnt exist
+        return res.status(404).json({ error: "scream not found" });
+      }
+    })
+    .then((data) => {
+      // return likeDoc.get();
+      if (data.empty) {
+        // no like
+        // we cant unlike something we havent liked
+        return res.status(400).json({ error: "scream not liked" });
+      } else {
+        // we found something we liked
+        return db
+          .doc(`/likes/${data.docs[0].id}`)
+          .delete()
+          .then(() => {
+            // reduce number of likes in the scream data
+            screamData.likeCount--;
+            return screamDoc
+              .update({ likeCount: screamData.likeCount })
+              .then(() => {
+                return res.json(screamData);
+              });
+          });
+      }
+    })
+    .catch((error) => res.status(500).json(error));
+};
