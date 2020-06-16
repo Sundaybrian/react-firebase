@@ -84,8 +84,18 @@ exports.commentOnScream = (req, res) => {
     createdAt: new Date().toISOString(),
   };
 
-  db.collection("comments")
-    .add(newComment)
+  db.doc(`/screams/${req.params.id}`)
+    .get()
+    .then((doc) => {
+      if (!doc.exists) {
+        return res.status(404).json({ message: "Scream does not exist!" });
+      }
+      // update scream comment count
+      return doc.ref.update({ commentCount: doc.data().commentCount + 1 });
+    })
+    .then(() => {
+      return db.collection("comments").add(newComment);
+    })
     .then(() => res.status(201).json(newComment))
     .catch((error) => res.status(500).json(error));
 };

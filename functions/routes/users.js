@@ -10,8 +10,7 @@ const { reduceUserDetails } = require("../utils/validators");
 exports.signup = (req, res) => {
   //  validation
   const errors = validationResult(req);
-  if (!errors.isEmpty())
-    return res.status(422).json({ errors: errors.array() });
+  if (!errors.isEmpty()) return res.status(422).json({ error: errors.array() });
 
   const { userHandle, email, password, confirmPassword } = req.body;
   let userId = "";
@@ -53,8 +52,7 @@ exports.signup = (req, res) => {
 // login user
 exports.login = (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty())
-    return res.status(422).json({ errors: errors.array() });
+  if (!errors.isEmpty()) return res.status(422).json({ error: errors.array() });
 
   const { email, password } = req.body;
   let token = "";

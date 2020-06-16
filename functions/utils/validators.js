@@ -5,6 +5,7 @@ exports.reduceUserDetails = (body) => {
 
   if (body.website && body.website.trim() !== "") {
     if (body.website.trim().substring(0, 4) !== "http") {
+      // append http to website
       userDetails.website = `http://${body.website.trim()}`;
     } else userDetails.website = body.website;
   }
