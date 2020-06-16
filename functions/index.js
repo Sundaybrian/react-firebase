@@ -74,7 +74,7 @@ exports.createNotificationOnLike = functions
   .firestore.document("likes/{id}")
   .onCreate((likeSnapshot) => {
     // fetch the scream
-    db.doc(`screams/${likeSnapshot.doc.data().screamId}`)
+    db.doc(`screams/${likeSnapshot.data().screamId}`)
       .get()
       .then((doc) => {
         if (doc.exists) {
@@ -102,7 +102,7 @@ exports.createNotificationOnComment = functions
   .region("europe-west3")
   .firestore.document("comments/{id}")
   .onCreate((commentSnapshot) => {
-    db.doc(`screams/${commentSnapshot.doc.data().screamId}`)
+    db.doc(`screams/${commentSnapshot.data().screamId}`)
       .get()
       .then((doc) => {
         if (doc.exists) {
@@ -127,7 +127,7 @@ exports.createNotificationOnComment = functions
 
 exports.deleteNotificationOnUnlike = functions
   .region("europe-west3")
-  .firestore.document("likes/${id}")
+  .firestore.document("likes/{id}")
   .onDelete((likeSnapshot) => {
     db.doc(`notifications/${likeSnapshot.id}`)
       .delete()
