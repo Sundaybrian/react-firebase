@@ -1,5 +1,5 @@
 const functions = require("firebase-functions");
-
+const { db } = require("./utils/admin");
 const express = require("express");
 const app = express();
 const { check } = require("express-validator");
@@ -67,3 +67,33 @@ app.get("/user/getAuthenticatedUser", auth, getAuthenticatedUser);
 
 // changing distance to closest server
 exports.api = functions.region("europe-west3").https.onRequest(app);
+
+// notifications with database triggers !!!! //
+exports.createNotificationOnLike = functions
+  .region("europe-west3")
+  .firestore.document("likes/{id}")
+  .onCreate((likeSnapshot) => {
+    // fetch the scream
+    db.doc(`screams/${likeSnapshot.doc.data().screamId}`)
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          // create the notifications
+          return db.doc(`notifications/${likeSnapshot.id}`).set({
+            createdAt: new Date().toISOString(),
+            recipient: doc.data().userHandle,
+            sender: likeSnapshot.data().userHandle,
+            type: "like",
+            read: false,
+            screamId: doc.id,
+          });
+        }
+      })
+      .then(() => {
+        return;
+      })
+      .catch((error) => {
+        console.error(error);
+        return;
+      });
+  });
