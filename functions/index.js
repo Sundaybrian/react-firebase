@@ -97,3 +97,30 @@ exports.createNotificationOnLike = functions
         return;
       });
   });
+
+exports.createNotificationOnComment = functions
+  .region("europe-west3")
+  .firestore.document("comments/{id}")
+  .onCreate((commentSnapshot) => {
+    db.doc(`screams/${commentSnapshot.doc.data().screamId}`)
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          return db.doc(`notifications/${commentSnapshot.id}`).set({
+            createdAt: new Date().toISOString(),
+            recipient: doc.data().userHandle,
+            sender: commentSnapshot.data().userHandle,
+            type: "comment",
+            read: false,
+            screamId: doc.id,
+          });
+        }
+      })
+      .then(() => {
+        return;
+      })
+      .catch((error) => {
+        console.error(error);
+        return;
+      });
+  });
