@@ -201,3 +201,28 @@ exports.unlikeScream = (req, res) => {
     })
     .catch((error) => res.status(500).json(error));
 };
+
+// delete a scream
+exports.deleteScream = (req, res) => {
+  const { userHandle } = req.user;
+  const screamId = req.params.id;
+  const screamDoc = db.doc(`/screams/${screamId}`);
+
+  screamDoc
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        //check if user is owner
+        if (doc.data().userHandle == userHandle) {
+          return screamDoc.delete();
+        }
+        return res.status(403).json({ message: "request is forbidden" });
+      } else {
+        return res.status(404).json({ error: "scream does not exist" });
+      }
+    })
+    .then(() => {
+      res.json({ message: "Scream Deleted successfully" });
+    })
+    .catch((error) => res.status(500).json({ error }));
+};
