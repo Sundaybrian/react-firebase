@@ -124,3 +124,18 @@ exports.createNotificationOnComment = functions
         return;
       });
   });
+
+exports.deleteNotificationOnUnlike = functions
+  .region("europe-west3")
+  .firestore.document("likes/${id}")
+  .onDelete((likeSnapshot) => {
+    db.doc(`notifications/${likeSnapshot.id}`)
+      .delete()
+      .then(() => {
+        return;
+      })
+      .catch((error) => {
+        console.error(error);
+        return;
+      });
+  });
